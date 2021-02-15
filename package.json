@@ -10,8 +10,8 @@
     "build": "npm run clean && tsc -p tsconfig.json",
     "test": "yarn build && jest dist/test"
   },
-  "license": "MIT",
   "private": false,
+  "license": "MIT",
   "devDependencies": {
     "@types/jest": "^26.0.20",
     "@types/node": "^14.14.27",
