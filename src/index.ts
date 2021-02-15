@@ -22,7 +22,34 @@ export class Tags {
    * @param tag The tag to be added to the system
    */
   add(...tags: Tag[]) {
-    this.tags = [...this.tags, ...tags];
+    tags.forEach((tag) => this._add(tag));
+  }
+
+  /**
+   * Add a tag to the tags system.
+   * @param tag The tag to be added to the system
+   */
+  private _add(tag: Tag) {
+    const t = this.tags.find(
+      (tg) => tg.name.toLowerCase() === tag.name.toLowerCase()
+    );
+
+    // If the tag exists, map through the tags and look for it.
+    if (t) {
+      this.tags = this.tags.map((tg) => {
+        if (t.name.toLowerCase() === tg.name.toLowerCase()) {
+          return {
+            name: t.name.toLowerCase(),
+            code: tag.code,
+            lvl: tag.lvl,
+          };
+        } else {
+          return tg;
+        }
+      });
+    } else {
+      this.tags.push(tag);
+    }
   }
 
   /**

@@ -45,6 +45,16 @@ test("Testing Tags.check", () => {
   expect(tags.check("wizard", "wizard|foobar staff+ !connected")).toBeTruthy();
 });
 
+test("Testing Tags.add", () => {
+  tags.add({
+    name: "wizard",
+    code: "w",
+    lvl: 9,
+  });
+
+  expect(tags.exists("wizard").lvl).toEqual(9);
+});
+
 test("Testing Tags.set", () => {
   // Check to make sure data is being set.
   expect(tags.set("", {}, "character wizard").data.character).toBeDefined();
