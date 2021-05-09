@@ -138,7 +138,7 @@ export class Tags {
       }
     });
     return {
-      tags: Array.from(tagSet),
+      tags: Array.from(tagSet).join(" "),
       data,
     };
   }
