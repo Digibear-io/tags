@@ -57,9 +57,9 @@ test("Testing Tags.add", () => {
 
 test("Testing Tags.set", () => {
   // Check to make sure data is being set.
-  expect(tags.set("", {}, "character wizard").data.character).toBeDefined();
+  const { data, tags: flags } = tags.set("", {}, "character wizard");
 
-  // When a tag is removed, delete the associated data.
+  expect(flags).toBe("character wizard");
   expect(
     tags.set(
       "",
