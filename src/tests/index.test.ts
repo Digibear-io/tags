@@ -57,9 +57,9 @@ test("Testing Tags.add", () => {
 
 test("Testing Tags.set", () => {
   // Check to make sure data is being set.
-  const { data, tags: flags } = tags.set("", {}, "character wizard");
+  const { data, tags: flags } = tags.set("foo", {}, "character wizard");
 
-  expect(flags).toBe("character wizard");
+  expect(flags).toBe("foo character wizard");
   expect(
     tags.set(
       "",

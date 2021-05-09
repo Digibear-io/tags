@@ -124,7 +124,7 @@ export class Tags {
    */
   set(tags: string, data: { [key: string]: any }, expr: string) {
     const list = expr.split(" ");
-    const tagSet = new Set(tags);
+    const tagSet = new Set(tags.split(" "));
 
     list.forEach((item) => {
       const tag = this.exists(item);
