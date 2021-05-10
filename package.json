@@ -1,11 +1,12 @@
 {
   "name": "@digibear/tags",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "A Tag/Flag system for UrsaMU",
   "main": "./dist/index.js",
   "repository": "https://github.com/digibear-io/tags.git",
   "author": "Lemuel Canady, Jr.",
   "scripts": {
+    "prepublish": "yarn run build",
     "clean": "rm -rf ./dist",
     "build": "npm run clean && tsc -p tsconfig.json",
     "test": "yarn build && jest dist/test"
