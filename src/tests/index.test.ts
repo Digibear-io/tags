@@ -75,3 +75,11 @@ test("Testing Tags.set", () => {
 
   expect(tags.set("", {}, "character wizard !staff").tags).toContain("wizard");
 });
+
+test("Tags comparing greater than are returning true.", () => {
+  expect(tags.check("foo bar baz wizard", "wizard+")).toEqual(true);
+});
+
+test("Tags Codes are returned when using the codes method", () => {
+  expect(tags.codes("character wizard")).toEqual("Cw");
+});

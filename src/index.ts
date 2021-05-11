@@ -41,13 +41,14 @@ export class Tags {
           return {
             name: t.name.toLowerCase(),
             code: tag.code,
-            lvl: tag.lvl,
+            lvl: tag.lvl || 0,
           };
         } else {
           return tg;
         }
       });
     } else {
+      tag.lvl = tag.lvl ? tag.lvl : 0;
       this.tags.push(tag);
     }
   }
@@ -61,7 +62,7 @@ export class Tags {
     let lvl = 0;
     return list.reduce((acc: Number, cur: string) => {
       const tag = this.exists(cur);
-      return acc < tag.lvl ? tag.lvl : acc;
+      return acc < tag?.lvl ? tag.lvl : acc;
     }, 0);
   }
 
@@ -73,6 +74,18 @@ export class Tags {
     return this.tags.filter(
       (tag) => tag.name.toLowerCase() === t.toLowerCase() || tag.code === t
     )[0];
+  }
+
+  /**
+   * Get a list of codes for a given list of flags
+   * @param flags The list of flags you want to get codes for.
+   * @returns
+   */
+  codes(flags: string) {
+    return flags
+      .split(" ")
+      .map((flag) => this.exists(flag) && this.exists(flag).code)
+      .reduce((a, b) => (a += b), "");
   }
 
   /**
