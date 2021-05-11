@@ -3,7 +3,7 @@ export interface Tag {
   code: string;
   data?: { [key: string]: any };
   lvl: number;
-  lock?: String;
+  lock?: string;
 }
 
 export class Tags {
