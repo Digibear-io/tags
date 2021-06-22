@@ -151,7 +151,7 @@ export class Tags {
       }
     });
     return {
-      tags: Array.from(tagSet).join(" "),
+      tags: Array.from(tagSet).join(" ").trim(),
       data,
     };
   }
