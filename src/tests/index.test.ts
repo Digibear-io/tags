@@ -85,5 +85,5 @@ test("Tags Codes are returned when using the codes method", () => {
 });
 
 test("Empty Tags returns true", () => {
-  expect(tags.check("", "")).toEqual(true);
+  expect(tags.check("wizard connect", "")).toEqual(true);
 });
