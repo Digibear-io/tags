@@ -97,7 +97,6 @@ export class Tags {
     const tags = tagExpr.split(" ").filter(Boolean);
     const listArray = list.split(" ").filter(Boolean);
     const results: boolean[] = [];
-    console.log(tags.length);
     if (tags.length <= 0) return true;
     tags.forEach((tag) => {
       /**
