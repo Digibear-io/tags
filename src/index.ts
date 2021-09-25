@@ -97,35 +97,39 @@ export class Tags {
     const tags = tagExpr.split(" ");
     const listArray = list.split(" ");
     const results: boolean[] = [];
-    tags.forEach((tag) => {
-      /**
-       * Compare a tag expression against tagList.
-       * @param tag The tag to check against tagList
-       */
-      const compare = (tag: string) => {
-        if (tag.startsWith("!")) {
-          tag = tag.slice(1);
-          return !listArray.includes(tag);
-        } else {
-          return listArray.includes(tag);
-        }
-      };
+    if (tags.length > 0) {
+      tags.forEach((tag) => {
+        /**
+         * Compare a tag expression against tagList.
+         * @param tag The tag to check against tagList
+         */
+        const compare = (tag: string) => {
+          if (tag.startsWith("!")) {
+            tag = tag.slice(1);
+            return !listArray.includes(tag);
+          } else {
+            return listArray.includes(tag);
+          }
+        };
 
-      // Or flag statement
-      if (/\|/.test(tag)) {
-        const exprList = tag.split("|");
-        const tempResults: boolean[] = [];
-        exprList.forEach((expr) => tempResults.push(compare(expr)));
-        return !!tempResults.includes(true);
-      } else if (/.*\+$/.test(tag)) {
-        return results.push(
-          this.lvl(list) >= this.exists(tag.slice(0, -1)).lvl
-        );
-      } else {
-        // Regular comparrison.
-        results.push(compare(tag));
-      }
-    });
+        // Or flag statement
+        if (/\|/.test(tag)) {
+          const exprList = tag.split("|");
+          const tempResults: boolean[] = [];
+          exprList.forEach((expr) => tempResults.push(compare(expr)));
+          return !!tempResults.includes(true);
+        } else if (/.*\+$/.test(tag)) {
+          return results.push(
+            this.lvl(list) >= this.exists(tag.slice(0, -1)).lvl
+          );
+        } else {
+          // Regular comparrison.
+          results.push(compare(tag));
+        }
+      });
+    } else {
+      results.push(true);
+    }
     return !results.includes(false);
   }
 

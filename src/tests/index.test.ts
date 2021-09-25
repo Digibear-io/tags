@@ -83,3 +83,7 @@ test("Tags comparing greater than are returning true.", () => {
 test("Tags Codes are returned when using the codes method", () => {
   expect(tags.codes("character wizard")).toEqual("Cw");
 });
+
+test("Empty Tags returns true", () => {
+  expect(tags.check("", "")).toEqual(true);
+});
