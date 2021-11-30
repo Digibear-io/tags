@@ -2,7 +2,7 @@ export interface Tag {
   name: string;
   code: string;
   data?: { [key: string]: any };
-  lvl: number;
+  lvl?: number;
   lock?: string;
 }
 
@@ -60,9 +60,9 @@ export class Tags {
   lvl(tags: string) {
     const list = tags.split(" ");
     let lvl = 0;
-    return list.reduce((acc: Number, cur: string) => {
+    return list.reduce((acc: number = 0, cur: string) => {
       const tag = this.exists(cur);
-      return acc < tag?.lvl ? tag.lvl : acc;
+      return acc < (tag?.lvl || 0) ? tag.lvl : acc;
     }, 0);
   }
 
@@ -120,7 +120,7 @@ export class Tags {
         return !!tempResults.includes(true);
       } else if (/.*\+$/.test(tag)) {
         return results.push(
-          this.lvl(list) >= this.exists(tag.slice(0, -1)).lvl
+          (this.lvl(list) || 0) >= (this.exists(tag.slice(0, -1)).lvl || 0)
         );
       } else {
         // Regular comparrison.
