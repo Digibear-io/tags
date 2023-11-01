@@ -1,9 +1,12 @@
+export type Data = { [key: string]: any };
 export interface Tag {
   name: string;
   code: string;
-  data?: { [key: string]: any };
+  data?: Data;
   lvl?: number;
   lock?: string;
+  add?: (data: Data) => Data | Promise<Data>;
+  remove?: (data: Data) => Data | Promise<Data>;
 }
 
 export class Tags {
@@ -146,10 +149,22 @@ export class Tags {
       if (item.startsWith("!")) {
         tagSet.delete(item.slice(1));
         delete data[item.slice(1)];
+
+        // check for tag.remove
+        if (tag && tag.remove) {
+          data = tag.remove(data);
+        }
+
       } else if (tag) {
         tagSet.add(tag.name);
-        if (tag.data && !data.hasOwnProperty(tag.name))
-          data[tag.name] = tag.data;
+        if (tag.data && !data.hasOwnProperty(tag.name)){
+          data[tag.name] = tag.data;}
+
+        // check for tag.add
+        if (tag && tag.add) {
+          data = tag.add(data);
+        }
+        
       }
     });
     return {
