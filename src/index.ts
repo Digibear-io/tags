@@ -1,4 +1,4 @@
-export type Data = { [key: string]: any };
+export type Data = Record<string, any>;
 export interface Tag {
   name: string;
   code: string;
@@ -10,14 +10,14 @@ export interface Tag {
 }
 
 export class Tags {
-  tags: Tag[];
+  private tagMap: Map<string, Tag>;
 
   /**
    * Create a new Tags Object.
    * @param tags An optional list of Tags to initialize the Tag object with.
    */
   constructor(...tags: Tag[]) {
-    this.tags = tags;
+    this.tagMap = new Map(tags.map(tag => [tag.name.toLowerCase(), tag]));
   }
 
   /**
@@ -25,47 +25,25 @@ export class Tags {
    * @param tag The tag to be added to the system
    */
   add(...tags: Tag[]) {
-    tags.forEach((tag) => this._add(tag));
-  }
-
-  /**
-   * Add a tag to the tags system.
-   * @param tag The tag to be added to the system
-   */
-  private _add(tag: Tag) {
-    const t = this.tags.find(
-      (tg) => tg.name.toLowerCase() === tag.name.toLowerCase()
-    );
-
-    // If the tag exists, map through the tags and look for it.
-    if (t) {
-      this.tags = this.tags.map((tg) => {
-        if (t.name.toLowerCase() === tg.name.toLowerCase()) {
-          return {
-            name: t.name.toLowerCase(),
-            code: tag.code,
-            lvl: tag.lvl || 0,
-          };
-        } else {
-          return tg;
-        }
+    tags.forEach(tag => {
+      const lowerName = tag.name.toLowerCase();
+      this.tagMap.set(lowerName, {
+        ...this.tagMap.get(lowerName),
+        ...tag,
+        name: lowerName,
+        lvl: tag.lvl || 0,
       });
-    } else {
-      tag.lvl = tag.lvl ? tag.lvl : 0;
-      this.tags.push(tag);
-    }
+    });
   }
 
   /**
    * Get the highest level within a list of tags.
    * @param tags The tag list to check against
    */
-  lvl(tags: string) {
-    const list = tags.split(" ");
-    let lvl = 0;
-    return list.reduce((acc: number = 0, cur: string) => {
+  lvl(tags: string): number {
+    return tags.split(/\s+/).reduce((acc, cur) => {
       const tag = this.exists(cur);
-      return acc < (tag?.lvl || 0) ? tag.lvl : acc;
+      return Math.max(acc, tag?.lvl || 0);
     }, 0);
   }
 
@@ -73,10 +51,8 @@ export class Tags {
    * Check to see if a tag exists, if it does - return the entire tag object,
    * @param t The tag to check for
    */
-  exists(t: string) {
-    return this.tags.filter(
-      (tag) => tag.name.toLowerCase() === t.toLowerCase() || tag.code === t
-    )[0];
+  exists(t: string): Tag | undefined {
+    return this.tagMap.get(t.toLowerCase()) || this.tagMap.get(t);
   }
 
   /**
@@ -84,11 +60,10 @@ export class Tags {
    * @param flags The list of flags you want to get codes for.
    * @returns
    */
-  codes(flags: string) {
-    return flags
-      .split(" ")
-      .map((flag) => this.exists(flag) && this.exists(flag).code)
-      .reduce((a, b) => (a += b), "");
+  codes(flags: string): string {
+    return flags.split(/\s+/)
+      .map(flag => this.exists(flag)?.code || '')
+      .join('');
   }
 
   /**
@@ -96,42 +71,22 @@ export class Tags {
    * @param list The list of tags to check.
    * @param tagExpr The expression string to check tags against.
    */
-  check(list: string, tagExpr: string) {
-    const tags = tagExpr.split(" ").filter(Boolean);
-    const listArray = list.split(" ").filter(Boolean);
-    const results: boolean[] = [];
-    if (tags.length <= 0) return true;
-    tags.forEach((tag) => {
-      /**
-       * Compare a tag expression against tagList.
-       * @param tag The tag to check against tagList
-       */
-      const compare = (tag: string) => {
-        if (tag.startsWith("!")) {
-          tag = tag.slice(1);
-          return !listArray.includes(tag);
-        } else {
-          return listArray.includes(tag);
-        }
-      };
+  check(list: string, tagExpr: string): boolean {
+    const tags = tagExpr.toLowerCase().split(/\s+/).filter(Boolean);
+    const listSet = new Set(list.toLowerCase().split(/\s+/).filter(Boolean));
 
-      // Or flag statement
-      if (/\|/.test(tag)) {
-        const exprList = tag.split("|");
-        const tempResults: boolean[] = [];
-        exprList.forEach((expr) => tempResults.push(compare(expr)));
-        return !!tempResults.includes(true);
-      } else if (/.*\+$/.test(tag)) {
-        return results.push(
-          (this.lvl(list) || 0) >= (this.exists(tag.slice(0, -1)).lvl || 0)
-        );
+    if (tags.length === 0) return true;
+
+    return tags.every(tag => {
+      if (tag.includes('|')) {
+        return tag.split('|').some(t => this.compareTag(t, listSet));
+      } else if (tag.endsWith('+')) {
+        const baseTag = tag.slice(0, -1);
+        return (this.lvl(list) || 0) >= (this.exists(baseTag)?.lvl || 0);
       } else {
-        // Regular comparrison.
-        results.push(compare(tag));
+        return this.compareTag(tag, listSet);
       }
     });
-
-    return !results.includes(false);
   }
 
   /**
@@ -140,36 +95,36 @@ export class Tags {
    * @param data Any flag data that already exsits
    * @param expr The expression to evaluate for new tags.
    */
-  set(tags: string, data: { [key: string]: any }, expr: string) {
-    const list = expr.split(" ");
-    const tagSet = new Set(tags.split(" "));
+  set(tags: string, data: Data, expr: string): { tags: string; data: Data } {
+    const tagSet = new Set(tags.split(/\s+/));
+    const exprList = expr.split(/\s+/);
 
-    list.forEach((item) => {
+    exprList.forEach(item => {
       const tag = this.exists(item);
-      if (item.startsWith("!")) {
-        tagSet.delete(item.slice(1));
-        delete data[item.slice(1)];
-
-        // check for tag.remove
-        if (tag && tag.remove) {
-          data = tag.remove(data);
-        }
-
+      if (item.startsWith('!')) {
+        const tagName = item.slice(1);
+        tagSet.delete(tagName);
+        delete data[tagName];
+        tag?.remove?.(data);
       } else if (tag) {
         tagSet.add(tag.name);
-        if (tag.data && !data.hasOwnProperty(tag.name)){
-          data[tag.name] = tag.data;}
-
-        // check for tag.add
-        if (tag && tag.add) {
-          data = tag.add(data);
+        if (tag.data && !(tag.name in data)) {
+          data[tag.name] = tag.data;
         }
-        
+        tag.add?.(data);
       }
     });
+
     return {
-      tags: Array.from(tagSet).join(" ").trim(),
+      tags: Array.from(tagSet).join(' '),
       data,
     };
+  }
+
+  private compareTag(tag: string, listSet: Set<string>): boolean {
+    if (tag.startsWith('!')) {
+      return !listSet.has(tag.slice(1).toLowerCase());
+    }
+    return listSet.has(tag.toLowerCase());
   }
 }
